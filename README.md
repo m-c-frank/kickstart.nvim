@@ -1,194 +1,98 @@
-# kickstart.nvim
+Based on your instructions, I'll provide an updated README with the full source code for the modified LinkMarkdown feature, tailored for integration into a custom `kickstart.nvim` monorepo on a specific branch. This setup implies that the feature is not distributed as a standalone plugin but as an additional capability that can be activated by placing the Lua script in the `lua` directory of your Neovim setup and adding specific configurations to your `init.lua`.
 
-https://github.com/kdheepak/kickstart.nvim/assets/1813121/f3ff9a2b-c31f-44df-a4fa-8a0d7b17cf7b
+### README for LinkMarkdown Feature in kickstart.nvim
 
-### Introduction
+# LinkMarkdown Feature for kickstart.nvim
 
-A starting point for Neovim that is:
+The LinkMarkdown feature extends `kickstart.nvim` by integrating with Telescope, facilitating the insertion of Markdown links into documents by copying the link to the clipboard instead of inserting it directly. It leverages Neovim's clipboard interface to enhance your Markdown workflow, allowing quick linking to files within a specified base path using a searchable interface.
 
-* Small
-* Single-file (with examples of moving to multi-file)
-* Documented
-* Modular
+## Features
 
-This repo is meant to be used by **YOU** to begin your Neovim journey; remove the things you don't use and add what you miss.
+- Leverages Telescope to search for files within a base path.
+- Copies Markdown link to the clipboard for easy pasting.
+- Utilizes the system's clipboard, compatible across various platforms.
 
-Kickstart.nvim targets *only* the latest ['stable'](https://github.com/neovim/neovim/releases/tag/stable) and latest ['nightly'](https://github.com/neovim/neovim/releases/tag/nightly) of Neovim. If you are experiencing issues, please make sure you have the latest versions.
+## Requirements
 
-Distribution Alternatives:
-- [LazyVim](https://www.lazyvim.org/): A delightful distribution maintained by @folke (the author of lazy.nvim, the package manager used here)
+- Neovim (version 0.5 or newer)
+- [Telescope](https://github.com/nvim-telescope/telescope.nvim) plugin
 
-### Installation
+## Installation
 
-> **NOTE** 
-> [Backup](#FAQ) your previous configuration (if any exists)
+This feature is designed to work as part of the `kickstart.nvim` monorepo. To use it, follow these steps:
 
-Requirements:
-* Make sure to review the readmes of the plugins if you are experiencing errors. In particular:
-  * [ripgrep](https://github.com/BurntSushi/ripgrep#installation) is required for multiple [telescope](https://github.com/nvim-telescope/telescope.nvim#suggested-dependencies) pickers.
-* See [Windows Installation](#Windows-Installation) if you have trouble with `telescope-fzf-native`
+1. Ensure `kickstart.nvim` is already set up in your environment.
+2. Clone the specific branch of `kickstart.nvim` that includes the LinkMarkdown feature.
+3. Place the `link_markdown.lua` file in the `lua` directory of your Neovim configuration (`~/.config/nvim/lua/`).
 
-Neovim's configurations are located under the following paths, depending on your OS:
+### Configuration
 
-| OS | PATH |
-| :- | :--- |
-| Linux | `$XDG_CONFIG_HOME/nvim`, `~/.config/nvim` |
-| MacOS | `$XDG_CONFIG_HOME/nvim`, `~/.config/nvim` |
-| Windows (cmd)| `%userprofile%\AppData\Local\nvim\` |
-| Windows (powershell)| `$env:USERPROFILE\AppData\Local\nvim\` |
-
-Clone kickstart.nvim:
-
-- on Linux and Mac
-```sh
-git clone https://github.com/nvim-lua/kickstart.nvim.git "${XDG_CONFIG_HOME:-$HOME/.config}"/nvim
-```
-
-- on Windows (cmd)
-```
-git clone https://github.com/nvim-lua/kickstart.nvim.git %userprofile%\AppData\Local\nvim\ 
-```
-
-- on Windows (powershell)
-```
-git clone https://github.com/nvim-lua/kickstart.nvim.git $env:USERPROFILE\AppData\Local\nvim\ 
-```
-
-
-### Post Installation
-
-Start Neovim
-
-```sh
-nvim
-```
-
-The `Lazy` plugin manager will start automatically on the first run and install the configured plugins - as can be seen in the introduction video. After the installation is complete you can press `q` to close the `Lazy` UI and **you are ready to go**! Next time you run nvim `Lazy` will no longer show up.
-
-If you would prefer to hide this step and run the plugin sync from the command line, you can use:
-
-```sh
-nvim --headless "+Lazy! sync" +qa
-```
-
-### Getting Started
-
-See [Effective Neovim: Instant IDE](https://youtu.be/stqUbv-5u2s), covering the previous version. Note: The install via init.lua is outdated, please follow the install instructions in this file instead. An updated video is coming soon.
-
-### Recommended Steps
-
-[Fork](https://docs.github.com/en/get-started/quickstart/fork-a-repo) this repo (so that you have your own copy that you can modify) and then installing you can install to your machine using the methods above.
-
-> **NOTE**  
-> Your fork's url will be something like this: `https://github.com/<your_github_username>/kickstart.nvim.git`
-
-### Configuration And Extension
-
-* Inside of your copy, feel free to modify any file you like! It's your copy!
-* Feel free to change any of the default options in `init.lua` to better suit your needs.
-* For adding plugins, there are 3 primary options:
-  * Add new configuration in `lua/custom/plugins/*` files, which will be auto sourced using `lazy.nvim` (uncomment the line importing the `custom/plugins` directory in the `init.lua` file to enable this)
-  * Modify `init.lua` with additional plugins.
-  * Include the `lua/kickstart/plugins/*` files in your configuration.
-
-You can also merge updates/changes from the repo back into your fork, to keep up-to-date with any changes for the default configuration.
-
-#### Example: Adding an autopairs plugin
-
-In the file: `lua/custom/plugins/autopairs.lua`, add:
+Add the following configurations to your `init.lua` to set up the base path and key bindings:
 
 ```lua
--- File: lua/custom/plugins/autopairs.lua
+-- Set the base path for file searches. Adjust the path as necessary.
+vim.g.linkmarkdown_base_path = "/home/mcfrank"
 
-return {
-  "windwp/nvim-autopairs",
-  -- Optional dependency
-  dependencies = { 'hrsh7th/nvim-cmp' },
-  config = function()
-    require("nvim-autopairs").setup {}
-    -- If you want to automatically add `(` after selecting a function or method
-    local cmp_autopairs = require('nvim-autopairs.completion.cmp')
-    local cmp = require('cmp')
-    cmp.event:on(
-      'confirm_done',
-      cmp_autopairs.on_confirm_done()
-    )
-  end,
-}
+-- Key mapping to trigger the file search and copy the Markdown link to the clipboard
+vim.api.nvim_set_keymap('n', '<leader>lm', '<cmd>lua require("link_markdown").search_insert_link()<CR>', {noremap = true, silent = true})
 ```
 
+## Usage
 
-This will automatically install [windwp/nvim-autopairs](https://github.com/windwp/nvim-autopairs) and enable it on startup. For more information, see documentation for [lazy.nvim](https://github.com/folke/lazy.nvim).
+1. Position your cursor where you wish to insert a Markdown link in your document.
+2. Press `<leader>lm` to open the Telescope file search.
+3. Start typing to filter the list of files. Select the file you wish to link and press Enter.
+4. The link is copied to your clipboard in Markdown format. Paste it wherever needed.
 
-#### Example: Adding a file tree plugin
+## Plugin Source Code
 
-In the file: `lua/custom/plugins/filetree.lua`, add:
+Below is the source code for `link_markdown.lua`. Place this script inside the `lua` directory within your Neovim configuration:
 
 ```lua
--- Unless you are still migrating, remove the deprecated commands from v1.x
-vim.cmd([[ let g:neo_tree_remove_legacy_commands = 1 ]])
+local M = {}
+local telescope = require('telescope.builtin')
+local action_state = require('telescope.actions.state')
 
-return {
-  "nvim-neo-tree/neo-tree.nvim",
-  version = "*",
-  dependencies = {
-    "nvim-lua/plenary.nvim",
-    "nvim-tree/nvim-web-devicons", -- not strictly required, but recommended
-    "MunifTanjim/nui.nvim",
-  },
-  config = function ()
-    require('neo-tree').setup {}
-  end,
-}
+function M.search_insert_link()
+    local opts = {}
+    opts.cwd = vim.g.linkmarkdown_base_path or vim.loop.cwd()
+
+    telescope.find_files({
+        prompt_title = "Insert Markdown Link",
+        cwd = opts.cwd,
+        attach_mappings = function(prompt_bufnr, map)
+            local insert_link = function()
+                local selection = action_state.get_selected_entry()
+                local link_text = action_state.get_current_line()
+                local relative_path = vim.fn.fnamemodify(selection.path, ":.")
+                local markdown_link = string.format("[%s](%s)", link_text, relative_path)
+                vim.fn.setreg('+', markdown_link)
+                vim.cmd('stopinsert')
+                require('telescope.actions').close(prompt_bufnr)
+            end
+
+            map('i', '<CR>', insert_link)
+            map('n', '<CR>', insert_link)
+            return true
+        end
+    })
+end
+
+return M
 ```
 
-This will install the tree plugin and add the command `:Neotree` for you. You can explore the documentation at [neo-tree.nvim](https://github.com/nvim-neo-tree/neo-tree.nvim) for more information.
+### Customization
 
-### Contribution
+You can adjust the base path for the file search and the key binding to fit your workflow by modifying the settings in your `init.lua` file.
 
-Pull-requests are welcome. The goal of this repo is not to create a Neovim configuration framework, but to offer a starting template that shows, by example, available features in Neovim. Some things that will not be included:
+### Hypothetical Document Links
 
-* Custom language server configuration (null-ls templates)
-* Theming beyond a default colorscheme necessary for LSP highlight groups
+For deeper insights into concepts integral to this feature, such as advanced usage of Telescope, manipulating the system clipboard with Neovim, or setting up a custom `kickstart.nvim` environment, refer to the following hypothetical documents:
 
-Each PR, especially those which increase the line count, should have a description as to why the PR is necessary.
+- [Advanced Telescope Usage](#)
+- [Neovim and System Clipboard Integration](#)
+- [Setting Up kickstart.nvim for Advanced Features](#)
 
-### FAQ
+Please note, these documents are hypothetical and represent areas for potential further exploration within the context of daily usage and development.
 
-* What should I do if I already have a pre-existing neovim configuration?
-  * You should back it up, then delete all files associated with it.
-  * This includes your existing init.lua and the neovim files in `~/.local` which can be deleted with `rm -rf ~/.local/share/nvim/`
-  * You may also want to look at the [migration guide for lazy.nvim](https://github.com/folke/lazy.nvim#-migration-guide)
-* Can I keep my existing configuration in parallel to kickstart?
-  * Yes! You can use [NVIM_APPNAME](https://neovim.io/doc/user/starting.html#%24NVIM_APPNAME)`=nvim-NAME` to maintain multiple configurations. For example you can install the kickstart configuration in `~/.config/nvim-kickstart` and create an alias:
-    ```
-    alias nvim-kickstart='NVIM_APPNAME="nvim-kickstart" nvim'
-    ```
-    When you run Neovim using `nvim-kickstart` alias it will use the alternative config directory and the matching local directory `~/.local/share/nvim-kickstart`. You can apply this approach to any Neovim distribution that you would like to try out.
-* What if I want to "uninstall" this configuration:
-  * See [lazy.nvim uninstall](https://github.com/folke/lazy.nvim#-uninstalling) information
-* Why is the kickstart `init.lua` a single file? Wouldn't it make sense to split it into multiple files?
-  * The main purpose of kickstart is to serve as a teaching tool and a reference
-    configuration that someone can easily `git clone` as a basis for their own.
-    As you progress in learning Neovim and Lua, you might consider splitting `init.lua`
-    into smaller parts. A fork of kickstart that does this while maintaining the exact
-    same functionality is available here:
-    * [kickstart-modular.nvim](https://github.com/dam9000/kickstart-modular.nvim)
-  * Discussions on this topic can be found here:
-    * [Restructure the configuration](https://github.com/nvim-lua/kickstart.nvim/issues/218)
-    * [Reorganize init.lua into a multi-file setup](https://github.com/nvim-lua/kickstart.nvim/pull/473)
-
-### Windows Installation
-
-Installation may require installing build tools, and updating the run command for `telescope-fzf-native`
-
-See `telescope-fzf-native` documentation for [more details](https://github.com/nvim-telescope/telescope-fzf-native.nvim#installation)
-
-This requires:
-
-- Install CMake, and the Microsoft C++ Build Tools on Windows
-
-```lua
-{'nvim-telescope/telescope-fzf-native.nvim', build = 'cmake -S. -Bbuild -DCMAKE_BUILD_TYPE=Release && cmake --build build --config Release && cmake --install build --prefix build' }
-```
-
+For more detailed information on configuring Telescope, Neovim, or troubleshooting, please refer to the official documentation of the respective tools.
